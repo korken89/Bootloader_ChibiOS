@@ -41,7 +41,7 @@ int main(void)
      * Start Serial Manager
      *
      */
-    //vSerialManagerInit();
+    vSerialManagerInit();
 
 
     while(1)
