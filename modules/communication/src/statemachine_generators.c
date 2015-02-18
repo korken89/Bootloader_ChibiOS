@@ -166,7 +166,7 @@ static bool GeneratePing(circular_buffer_t *Cbuff)
  */
 static bool GenerateGetRunningMode(circular_buffer_t *Cbuff)
 {
-    return GenerateGenericCommand(Cmd_GetRunningMode, (uint8_t *)"P", 1, Cbuff);
+    return GenerateGenericCommand(Cmd_GetRunningMode, (uint8_t *)"B", 1, Cbuff);
 }
 
 /**
