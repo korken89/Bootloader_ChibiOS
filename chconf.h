@@ -504,9 +504,9 @@ typedef struct {
 
 #define chDbgAssert(c, r) do {                                              \
   if (CH_DBG_ENABLE_ASSERTS && !(c)) {                                      \
-    extern volatile assert_errors kfly_assert_errors;                       \
-    kfly_assert_errors.reason = r;                                          \
-    kfly_assert_errors.function = __func__;                                 \
+    extern volatile assert_errors _assert_errors;                           \
+    _assert_errors.reason = r;                                              \
+    _assert_errors.function = __func__;                                     \
     chSysHalt(__func__);                                                    \
   }                                                                         \
 } while (0)

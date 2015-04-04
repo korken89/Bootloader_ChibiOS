@@ -65,7 +65,7 @@ endif
 
 # Enables the use of FPU on Cortex-M4 (no, softfp, hard).
 ifeq ($(USE_FPU),)
-  USE_FPU = softfp
+  USE_FPU = hard
 endif
 
 #
@@ -79,39 +79,41 @@ endif
 # Define project name here
 PROJECT = kboot
 
-# Create include paths and find sources of all the modules
-MODULES = $(wildcard ./modules/*)
-$(foreach dir, $(MODULES) , $(eval MODULES_INC += $(dir)/inc))
-$(foreach dir, $(MODULES), $(eval MODULES_CSRCS += $(wildcard $(dir)/src/*.c)))
-$(foreach dir, $(MODULES), $(eval MODULES_ASRCS += $(wildcard $(dir)/src/*.s)))
-
 # Imported source files and paths
 CHIBIOS = ../ChibiOS
+# Startup files.
+include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
+# HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
-include board/board.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
+include board/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
+# RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
-include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_stm32f4xx.mk
-#include $(CHIBIOS)/test/rt/test.mk
+include $(CHIBIOS)/os/rt/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+# Other files (optional).
+include system/system.mk
+# Modules
+include modules/modules.mk
 
 # Define linker script file here
-LDSCRIPT= make/STM32F405xG_CCM.ld
-#LDSCRIPT= $(PORTLD)/STM32F407xG_CCM.ld
+LDSCRIPT = make/STM32F405xG.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC = $(PORTSRC) \
+CSRC = $(STARTUPSRC) \
        $(KERNSRC) \
-       $(HALSRC) \
+       $(PORTSRC) \
        $(OSALSRC) \
+       $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
+       $(SYSTEMSRC) \
        $(ADRIVERSSRC) \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
        main.c \
-       $(MODULES_CSRCS)
+       $(MODULES_SRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -138,10 +140,10 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC = $(PORTASM) $(MODULES_ASRCS)
+ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
-INCDIR = $(PORTINC) $(KERNINC) \
-         $(HALINC) $(OSALINC) $(PLATFORMINC) $(BOARDINC) \
+INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
+         $(HALINC) $(PLATFORMINC) $(BOARDINC) $(SYSTEMINC) \
          $(ADRIVERSINC) $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
          $(MODULES_INC)
 

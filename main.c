@@ -1,10 +1,12 @@
 #include "ch.h"
 #include "hal.h"
-#include "myusb.h"
-#include "chprintf.h"
-#include "serialmanager.h"
+#include "system_init.h"
+#include "bootloader.h"
 
-volatile assert_errors kfly_assert_errors;
+/**
+ * @brief Placeholder for error messages.
+ */
+volatile assert_errors _assert_errors;
 
 int main(void)
 {
@@ -20,33 +22,45 @@ int main(void)
 
     /*
      *
-     * Initializes a serial-over-USB CDC driver.
-     * 
+     * Initialize all drivers and modules.
+     *
      */
-    sduObjectInit(&SDU1);
-    sduStart(&SDU1, &serusbcfg);
+    vSystemInit();
 
     /*
      *
-     * Activates the USB driver and then the USB bus pull-up on D+.
-     * 
-     */
-    usbDisconnectBus(serusbcfg.usbp);
-    chThdSleepMilliseconds(500);
-    usbStart(serusbcfg.usbp, &usbcfg);
-    usbConnectBus(serusbcfg.usbp);
-
-    /*
-     *
-     * Start Serial Manager
+     * Idle task loop.
      *
      */
-    vSerialManagerInit();
-
-
-    while(1)
+    while(bSystemShutdownRequested() == false)
     {
         palTogglePad(GPIOC, GPIOC_LED_USR);
         chThdSleepMilliseconds(200);
+        //vSystemRequestShutdown(SYSTEM_SHUTDOWN_KEY);
     }
+
+    /*
+     *
+     * Deinitialize all drivers and modules.
+     *
+     */
+    vSystemDeinit();
+
+   /*
+    *
+    * All threads, drivers, interrupts and SysTick are now disabled.
+    * The main function is now just a "normal" function again.
+    *
+    */
+
+    /*
+     *
+     * Start the DFU bootloader.
+     * This can be replaced if a custom bootloader is available.
+     *
+     */
+    //vBootloaderResetAndStartDFU();
+
+    /* In case of error get stuck here */
+    while (1);
 }
