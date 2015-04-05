@@ -12,6 +12,12 @@ volatile assert_errors _assert_errors;
 time_measurement_t tm;
 rtcnt_t tm_delta;
 
+FLASH_Status EraseArea(uint32_t base_sector, uint32_t size)
+{
+    /* Check the parameters */
+    osalDbgCheck(IS_FLASH_SECTOR(base_sector));
+}
+
 int main(void)
 {
     FLASH_Status status;
@@ -46,9 +52,11 @@ int main(void)
     status = FLASH_EraseSector(FLASH_Sector_5, VoltageRange_3); // 128k
 
     for (i = 0; i < 256*150; i++)
-      FLASH_ProgramWord(0x08008000 + i*4, 0xdeadbeef+i);
+      status = FLASH_ProgramWord(0x08008000 + i*4, 0xdeadbeef+i);
 
     FLASH_Lock();
+
+    (void)status;
 
     chTMStopMeasurementX(&tm);
     tm_delta = RTC2MS(STM32_SYSCLK, tm.last);
