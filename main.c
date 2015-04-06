@@ -2,18 +2,14 @@
 #include "hal.h"
 #include "system_init.h"
 #include "bootloader.h"
-#include "flash_functionality.h"
+#include "flash_statemachine.h"
+#include "myusb.h"
 
 
 /**
  * @brief Placeholder for error messages.
  */
 volatile assert_errors _assert_errors;
-
-time_measurement_t tm;
-rtcnt_t tm_delta;
-
-
 
 int main(void)
 {
@@ -34,14 +30,6 @@ int main(void)
      */
     vSystemInit();
 
-    chTMObjectInit(&tm);
-    chTMStartMeasurementX(&tm);
-
-    FlashEraseFromSector(FLASH_Sector_2, 1024*250);
-
-    chTMStopMeasurementX(&tm);
-    tm_delta = RTC2MS(STM32_SYSCLK, tm.last);
-
     /*
      *
      * Idle task loop.
@@ -49,8 +37,16 @@ int main(void)
      */
     while(bSystemShutdownRequested() == false)
     {
-        palTogglePad(GPIOC, GPIOC_LED_USR);
-        chThdSleepMilliseconds(200);
+        if (isUSBActive())
+        {
+            FlashStateMachine(USBReadByte(TIME_INFINITE));
+            palTogglePad(GPIOC, GPIOC_LED_USR);
+        }
+        else
+        {
+            palTogglePad(GPIOC, GPIOC_LED_ERR);
+            chThdSleepMilliseconds(200);
+        }
         //vSystemRequestShutdown(SYSTEM_SHUTDOWN_KEY);
     }
 
