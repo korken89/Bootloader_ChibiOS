@@ -30,6 +30,9 @@ int main(void)
      */
     vSystemInit();
 
+    /* Test the VBUS line... */
+    volatile uint32_t port = palReadPad(GPIOA, GPIOA_VBUS_FS);
+
     /*
      *
      * Idle task loop.
