@@ -42,10 +42,10 @@ uint32_t FlashGetSector(uint32_t base_sector, uint32_t size)
     osalDbgCheck(IS_FLASH_SECTOR(base_sector));
 
     /* Sector sizes for STM32F405 */
-    static const uint32_t sector_sizes[] = {16*1024, 16*1024, 16*1024, 16*1024,
-                                            64*1024, 128*1024, 128*1024,
-                                            128*1024, 128*1024, 128*1024,
-                                            128*1024};
+    static ROMCONST uint32_t sector_sizes[] = {16*1024, 16*1024, 16*1024,
+                                               16*1024, 64*1024, 128*1024,
+                                               128*1024, 128*1024, 128*1024,
+                                               128*1024, 128*1024};
 
     uint32_t i = base_sector / FLASH_Sector_1, sum = 0;
 
