@@ -45,11 +45,9 @@ int main(void)
         if (isUSBActive())
         {
             FlashStateMachine(USBReadByte(TIME_INFINITE));
-            palTogglePad(GPIOC, GPIOC_LED_USR);
         }
         else
         {
-            palTogglePad(GPIOC, GPIOC_LED_ERR);
             chThdSleepMilliseconds(200);
         }
         //vSystemRequestShutdown(SYSTEM_SHUTDOWN_KEY);
