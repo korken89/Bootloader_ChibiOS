@@ -23,6 +23,12 @@ int main(void)
     halInit();
     chSysInit();
 
+    /* Test the VBUS line... */
+    if (palReadPad(GPIOA, GPIOA_VBUS_FS) != 1)
+    {
+
+    }
+
     /*
      *
      * Initialize all drivers and modules.
@@ -30,10 +36,6 @@ int main(void)
      */
     vSystemInit();
 
-    /* Test the VBUS line... */
-    volatile uint32_t port = palReadPad(GPIOA, GPIOA_VBUS_FS);
-
-    (void)port;
 
     /*
      *
