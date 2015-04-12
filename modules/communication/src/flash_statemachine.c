@@ -2,7 +2,7 @@
 #include "hal.h"
 #include "myusb.h"
 #include "flash_statemachine.h"
-
+#include "chprintf.h"
 /*===========================================================================*/
 /* Module local definitions.                                                 */
 /*===========================================================================*/
@@ -14,9 +14,9 @@
 /*===========================================================================*/
 /* Module local variables and types.                                         */
 /*===========================================================================*/
-uint8_t command_buffer[FLASH_CMD_BUFFER_SIZE];
+char command_buffer[FLASH_CMD_BUFFER_SIZE];
 uint32_t pos = 0;
-flash_states_t state = FLASH_GET_CMD;
+flash_state_t state = FLASH_GET_CMD;
 /*===========================================================================*/
 /* Module local functions.                                                   */
 /*===========================================================================*/
@@ -44,6 +44,47 @@ static bool strcmp_ms(char *s1, char *s2, const uint32_t max_size)
 
     return true;
 }
+static int32_t simple_atoi(char *str, uint32_t len)
+{
+    int32_t i, scale = 1, sum = 0;
+    for (i = len-1; i >= 0; i--)
+    {
+        sum += scale*((int32_t)str[i] - (int32_t)'0');
+        scale *= 10;
+    }
+
+    return sum;
+}
+
+static int32_t getNum(char *str, uint32_t len)
+{
+    uint32_t pos = 0, start;
+
+    /* Check for errors */
+    if (len == 0)
+        return -1;
+
+    /* Skip all spaces */
+    while (str[pos] == ' ' && pos < len)
+        pos++;
+
+    /* Check for errors */
+    if (pos >= len)
+        return -1;
+
+    start = pos;
+    /* Check so all the last characters are numbers */
+    while (pos < len)
+    {
+        if (str[pos] > '9' || str[pos] < '0')
+            return -1;
+        else
+            pos++;
+    }
+
+    /* Convert characters to number */
+    return simple_atoi(&str[start], len - start);
+}
 /*===========================================================================*/
 /* Module exported functions.                                                */
 /*===========================================================================*/
@@ -66,31 +107,34 @@ void FlashStateMachine(uint8_t data)
     }
 }
 
-flash_states_t ParseCommand(uint8_t data)
+flash_state_t ParseCommand(uint8_t data)
 {
+    int32_t size;
+
     if (pos < FLASH_CMD_BUFFER_SIZE && data != '\n')
     {
-        command_buffer[pos++] = data;
+        command_buffer[pos++] = (char)data;
     }
     else if (pos > 0 && pos < FLASH_CMD_BUFFER_SIZE && data == '\n')
     {
-        if (strcmp_ms("HELP", (char *)command_buffer, 4))
+        if (strcmp_ms("HELP", command_buffer, 4))
         {
             USBSendData((uint8_t *)"Help!\n", 6, TIME_INFINITE);
         }
-        else if (strcmp_ms("INFO", (char *)command_buffer, 4))
+        else if (strcmp_ms("INFO", command_buffer, 4))
         {
             USBSendData((uint8_t *)"Info!\n", 6, TIME_INFINITE);
         }
-        else if (strcmp_ms("WRITE", (char *)command_buffer, 5))
+        else if (strcmp_ms("WRITE", command_buffer, 5))
         {
-            USBSendData((uint8_t *)"Write!\n", 7, TIME_INFINITE);
+            size = getNum(&command_buffer[5], pos - 5);
+            chprintf(USBStream(), "WRITE: %i\n", size);
         }
-        else if (strcmp_ms("ERASE", (char *)command_buffer, 5))
+        else if (strcmp_ms("ERASE", command_buffer, 5))
         {
             USBSendData((uint8_t *)"Erase!\n", 7, TIME_INFINITE);
         }
-        else if (strcmp_ms("USERAPP", (char *)command_buffer, 7))
+        else if (strcmp_ms("USERAPP", command_buffer, 7))
         {
             USBSendData((uint8_t *)"User app!\n", 10, TIME_INFINITE);
         }

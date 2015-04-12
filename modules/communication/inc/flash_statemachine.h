@@ -15,7 +15,7 @@ typedef enum
     FLASH_GET_CMD,
     FLASH_GET_DATA,
     FLASH_EXIT
-} flash_states_t;
+} flash_state_t;
 
 typedef struct
 {
@@ -36,6 +36,6 @@ typedef struct
 /* External declarations.                                                    */
 /*===========================================================================*/
 void FlashStateMachine(uint8_t data);
-flash_states_t ParseCommand(uint8_t data);
+flash_state_t ParseCommand(uint8_t data);
 
 #endif
