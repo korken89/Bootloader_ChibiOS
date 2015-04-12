@@ -156,11 +156,6 @@ bool isUSBActive(void)
 		return false;
 }
 
-void USBMutexInit(void)
-{
-    chMtxObjectInit(&USB_write_lock);
-}
-
 size_t USBSendData(uint8_t *data, size_t size, systime_t timeout)
 {
   size_t sent;
