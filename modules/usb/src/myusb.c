@@ -17,8 +17,6 @@
 
 /* Private external functions */
 
-mutex_t USB_write_lock;
-
 /*
  * Serial over USB Driver structure.
  */
